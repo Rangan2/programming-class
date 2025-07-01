@@ -3,9 +3,8 @@ using namespace std;
 
 
 int find_perfect_sqrt (int x) {
-    if (x == 1) {
+    if (x == 1) 
         return 1;
-    }
         
     int left = 2;
     int right = x / 2;
