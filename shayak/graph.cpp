@@ -25,6 +25,10 @@ class Graph {
 
     Graph(Graph& graph) {
         // Write your copy constructor here
+        cout << "Copy Constructor Called\n";
+        this->size = graph.size;
+        this->isDirected = graph.isDirected;
+        this->adjList = graph.adjList;
     }
 
     ~Graph() { // Destructor
@@ -78,17 +82,51 @@ class Graph {
         return adjList;
     }
 
+    void sortGraphStructure(vector<vector<int>>& graph) {
+        sort(graph.begin(), graph.end(), compareNodes);
+    }
+
+    static bool compareNodes(vector<int>& a, vector<int>& b) {
+        if (a.size() != b.size())
+            return a.size() < b.size();
+        return a < b;
+    }
+
     bool isGraphIsomorphic(Graph& G) {
         vector<unordered_set<int>>& g2AdjList = G.getAdjList();
         // write your code here
+        if (this->size != G.size)
+            return false;
+        
+        vector<unordered_set<int>>& g1 = this->adjList;
+        vector<unordered_set<int>>& g2 = G.getAdjList();
 
-        return false;
+        vector<vector<int>> g1Sorted(size), g2Sorted(size);
+
+        for (int i = 0; i < size; i++) {
+            g1Sorted[i] = vector<int>(g1[i].begin(), g1[i].end());
+            g2Sorted[i] = vector<int>(g2[i].begin(), g2[i].end());
+
+            sort(g1Sorted[i].begin(), g1Sorted[i].end());
+            sort(g2Sorted[i].begin(), g2Sorted[i].end());
+        }
+
+        sortGraphStructure(g1Sorted);
+        sortGraphStructure(g2Sorted);
+
+
+        return g1Sorted == g1Sorted;
     }
 };
 
 main() {
-    Graph G1(4, {{0, 1}, {1, 3}, {2, 3}}, false), G2(4, {{0, 1}, {1, 3}, {2, 3}}, false);
+    Graph G1(4, {{0, 1}, {1, 3}, {2, 3}}, false);
+    Graph G2(4, {{0, 1}, {1, 3}, {2, 3}}, false);
+
     G1.addEdge(0, 3);
     G2.addEdge(0, 3);
-    cout << G1.isGraphIsomorphic(G2);
+    cout << "Are G1 and G2 isomorphic? " << (G1.isGraphIsomorphic(G2) ? "Yes" : "No") << endl;
+
+    Graph G3(G1);  // Test copy constructor
+    cout << "Are G1 and G3 isomorphic? " << (G1.isGraphIsomorphic(G3) ? "Yes" : "No") << endl;
 }
