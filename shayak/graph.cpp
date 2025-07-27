@@ -8,7 +8,7 @@ using namespace std;
 class Graph {
   private:
     int size = 0; // number of vertices;
-    vector<unordered_set<int>> adjList;
+    vector<unordered_map<int, int>> adjList; // weighted graph
     bool isDirected = false;
   public:
     Graph() { // Default Constructor
@@ -52,13 +52,15 @@ class Graph {
         
         return true;
     }
-
-    bool addEdge(int source, int target) {
+    
+    // g.addEdge(v1, v2); --> {v1, v2, 1}
+    // g.addEdge(v1, v2, w); --> {v1, v2, w}
+    bool addEdge(int source, int target, int weight = 1) {
         if (!isEdgeValid(source, target))
             return false;
-        adjList[source].insert(target);
+        adjList[source][target] = weight;
         if (!isDirected)
-            adjList[target].insert(source);
+            adjList[target][source] = weight;
 
         return true;
     }
@@ -69,20 +71,81 @@ class Graph {
                 return false;
         
         for (auto& e: edges)
-            addEdge(e[0], e[1]);
+            if (e.size() == 2)
+                addEdge(e[0], e[1]);
+            else if (e.size() == 3)
+                addEdge(e[0], e[1], e[2]);
         
         return true;
     }
 
-    vector<unordered_set<int>>& getAdjList() {
+    vector<unordered_map<int, int>>& getAdjList() {
         return adjList;
     }
 
-    bool isGraphIsomorphic(Graph& G) {
-        vector<unordered_set<int>>& g2AdjList = G.getAdjList();
-        // write your code here
+    bool isGraphIsomorphic(Graph& G, vector<int> permutation) {
+        if (permutation.size() != this->size)
+            return false;
+        
+        vector<unordered_map<int, int>>& g2AdjList = G.getAdjList();
+        
+        if (g2AdjList.size() != this->adjList.size())
+            return false;
 
-        return false;
+        for(int i = 0; i < size; i++) {
+            if (this->adjList[i].size() != g2AdjList[permutation[i]].size())
+                return false;
+            
+            for (auto [v, w]: this->adjList[i]) {
+                if (g2AdjList[permutation[i]].count(permutation[v]) == 0 ||
+                    w != g2AdjList[permutation[i]][permutation[v]])
+
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    Graph minimumSpanningTree() {
+        Graph mst(this->size, {}, false);
+        auto edgeList = this->getEdgeList();
+        sort(edgeList.begin(), edgeList.end(), [](auto& a, auto& b) {
+            return a[2] < b[2];
+        });
+
+        vector<bool> isVisited(this->size, false);
+        for (auto edge: edgeList) {
+            if (isVisited[edge[0]] == true && isVisited[edge[1]] == true) // cycle
+                continue;
+            
+            mst.addEdge(edge[0], edge[1], edge[2]);
+            isVisited[edge[0]] = true;
+            isVisited[edge[1]] = true;
+        }
+
+        return mst;
+    }
+
+    vector<int> bfs() {
+
+    }
+
+    vector<int> dfs() {
+
+    }
+
+    vector<int> topologicalOrdering() {
+
+    }
+
+    bool hasCycles() {
+
+    }
+
+  private:
+    vector<vector<int>> getEdgeList() {
+
     }
 };
 
@@ -90,5 +153,5 @@ main() {
     Graph G1(4, {{0, 1}, {1, 3}, {2, 3}}, false), G2(4, {{0, 1}, {1, 3}, {2, 3}}, false);
     G1.addEdge(0, 3);
     G2.addEdge(0, 3);
-    cout << G1.isGraphIsomorphic(G2);
+    //cout << G1.isGraphIsomorphic(G2, {});
 }
